@@ -1,8 +1,7 @@
-from http.client import HTTPException
+from fastapi import HTTPException
 
 from fastapi import FastAPI
 from datetime import date
-from traitlets import Float
 import logging
 import db_helper
 from typing import List
