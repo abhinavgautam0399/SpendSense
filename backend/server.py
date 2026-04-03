@@ -3,6 +3,12 @@ from fastapi import HTTPException
 from fastapi import FastAPI
 from datetime import date
 import logging
+from backend import db_helper
+import sys
+import os
+
+sys.path.append(os.path.dirname(__file__))
+
 import db_helper
 from typing import List
 from pydantic import BaseModel
