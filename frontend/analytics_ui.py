@@ -3,10 +3,9 @@ import requests
 import pandas as pd
 from datetime import datetime
 import matplotlib.pyplot as plt
+import time
 
-import os
-API_URL = os.getenv("API_URL", "http://localhost:8000")
-
+API_URL = "https://spendsense-backend-m0ze.onrender.com"
 
 def analytics_tab():
     st.markdown("## 📊 Expense Analytics")
@@ -31,7 +30,17 @@ def analytics_tab():
         "end_date": end_date.strftime("%Y-%m-%d")
     }
 
-    res = requests.post(f"{API_URL}/analytics/", json=payload)
+    # 🔹 SAFE REQUEST (handles Render sleep)
+    try:
+        res = requests.post(f"{API_URL}/analytics/", json=payload, timeout=10)
+    except requests.exceptions.RequestException:
+        st.warning("⏳ Backend waking up... please wait...")
+        time.sleep(5)
+        try:
+            res = requests.post(f"{API_URL}/analytics/", json=payload, timeout=10)
+        except:
+            st.error("❌ Backend not reachable")
+            st.stop()
 
     if res.status_code != 200:
         st.error("Failed to fetch analytics data")
@@ -56,6 +65,7 @@ def analytics_tab():
     col1.metric("Total Spend", f"₹{total:,.0f}")
     col2.metric("Top Category", df.iloc[0]["Category"])
 
+    # Budget
     if "budget" not in st.session_state:
         st.session_state.budget = 0.0
 
@@ -110,27 +120,12 @@ def analytics_tab():
         labels=df["Category"],
         startangle=90,
         colors=colors,
-        wedgeprops={
-            'width': 0.38,
-            'edgecolor': '#0E1117',
-            'linewidth': 2
-        },
-        textprops={
-            'color': '#EAEAEA',
-            'fontsize': 13,
-            'weight': 'bold'
-        }
+        wedgeprops={'width': 0.38, 'edgecolor': '#0E1117', 'linewidth': 2},
+        textprops={'color': '#EAEAEA', 'fontsize': 13, 'weight': 'bold'}
     )
 
-    plt.text(
-        0, 0,
-        "Expense\nDistribution",
-        ha='center',
-        va='center',
-        fontsize=15,
-        color='#F5F5F5',
-        weight='bold'
-    )
+    plt.text(0, 0, "Expense\nDistribution", ha='center', va='center',
+             fontsize=15, color='#F5F5F5', weight='bold')
 
     ax.set_facecolor('#0E1117')
     fig.patch.set_facecolor('#0E1117')
@@ -138,7 +133,6 @@ def analytics_tab():
     st.pyplot(fig)
 
     st.bar_chart(df.set_index("Category")["Percentage"], use_container_width=True)
-
     st.dataframe(df, use_container_width=True)
 
     st.download_button(

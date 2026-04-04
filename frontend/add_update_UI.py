@@ -5,44 +5,31 @@ import time
 
 API_URL = "https://spendsense-backend-m0ze.onrender.com"
 
-
 def add_update_tab():
-
-
     selected_date = st.date_input("Enter Date", datetime(2024, 8, 1))
     date_str = selected_date.strftime("%Y-%m-%d")
 
-
-    url = f"{API_URL}/expenses/{date_str}"
-
+    # 🔹 Fetch existing expenses (SAFE)
     try:
-        response = requests.get(url, timeout=30)
-
+        response = requests.get(f"{API_URL}/expenses/{date_str}", timeout=10)
         if response.status_code == 200:
             existing_expenses = response.json()
         else:
             st.error("Failed to retrieve expenses")
             existing_expenses = []
-
     except requests.exceptions.RequestException:
         st.warning("⏳ Backend waking up... please wait...")
         time.sleep(5)
-
         try:
-            response = requests.get(url, timeout=30)
-            existing_expenses = response.json()
+            response = requests.get(f"{API_URL}/expenses/{date_str}", timeout=10)
+            existing_expenses = response.json() if response.status_code == 200 else []
         except:
-            st.error("❌ Backend not reachable. Try again.")
-            existing_expenses = []
+            st.error("❌ Backend not reachable")
+            st.stop()
 
-    # 🧾 Categories
     categories = ["Rent", "Food", "Shopping", "Entertainment", "Other"]
 
-    # 📦 Form
     with st.form(key="expense_form"):
-
-        st.subheader("Add / Update Expenses")
-
         col1, col2, col3 = st.columns(3)
 
         with col1:
@@ -54,9 +41,7 @@ def add_update_tab():
 
         expenses = []
 
-
         for i in range(5):
-
             if i < len(existing_expenses):
                 amount = existing_expenses[i].get("amount", 0.0)
                 category = existing_expenses[i].get("category", "Shopping")
@@ -74,7 +59,7 @@ def add_update_tab():
                     min_value=0.0,
                     step=1.0,
                     value=float(amount),
-                    key=f"amount_{selected_date}_{i}",
+                    key=f"amount_{date_str}_{i}",
                     label_visibility="collapsed"
                 )
 
@@ -83,7 +68,7 @@ def add_update_tab():
                     label="Category",
                     options=categories,
                     index=categories.index(category) if category in categories else 0,
-                    key=f"category_{selected_date}_{i}",
+                    key=f"category_{date_str}_{i}",
                     label_visibility="collapsed"
                 )
 
@@ -91,7 +76,7 @@ def add_update_tab():
                 notes_input = st.text_input(
                     label="Notes",
                     value=notes,
-                    key=f"notes_{selected_date}_{i}",
+                    key=f"notes_{date_str}_{i}",
                     label_visibility="collapsed"
                 )
 
@@ -101,24 +86,20 @@ def add_update_tab():
                 "notes": notes_input
             })
 
-        #  Submit button
         submit_button = st.form_submit_button("Save Expenses")
 
         if submit_button:
-
-
             invalid_entries = [exp for exp in expenses if exp["amount"] <= 0]
 
             if len(invalid_entries) > 0:
                 st.error("All amounts must be greater than 0")
                 st.stop()
 
-
             try:
                 response = requests.post(
                     f"{API_URL}/expenses/{date_str}",
                     json=expenses,
-                    timeout=30
+                    timeout=10
                 )
 
                 if response.status_code == 200:
@@ -127,15 +108,4 @@ def add_update_tab():
                     st.error("Failed to update expenses.")
 
             except requests.exceptions.RequestException:
-                st.warning("⏳ Backend waking up... retrying...")
-                time.sleep(5)
-
-                try:
-                    response = requests.post(
-                        f"{API_URL}/expenses/{date_str}",
-                        json=expenses,
-                        timeout=30
-                    )
-                    st.success("Expenses updated successfully!")
-                except:
-                    st.error("❌ Failed to connect to backend.")
+                st.error("❌ Backend not reachable")
