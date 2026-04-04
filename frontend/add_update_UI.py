@@ -1,46 +1,60 @@
 import streamlit as st
 from datetime import datetime
 import requests
-import os
+import time
 
 API_URL = "https://spendsense-backend-m0ze.onrender.com"
 
 
 def add_update_tab():
 
+
     selected_date = st.date_input("Enter Date", datetime(2024, 8, 1))
-
-
     date_str = selected_date.strftime("%Y-%m-%d")
 
 
-    response = requests.get(f"{API_URL}/expenses/{date_str}")
+    url = f"{API_URL}/expenses/{date_str}"
 
-    if response.status_code == 200:
-        existing_expenses = response.json()
-    else:
-        st.error("Failed to retrieve expenses")
-        existing_expenses = []
+    try:
+        response = requests.get(url, timeout=30)
 
+        if response.status_code == 200:
+            existing_expenses = response.json()
+        else:
+            st.error("Failed to retrieve expenses")
+            existing_expenses = []
+
+    except requests.exceptions.RequestException:
+        st.warning("⏳ Backend waking up... please wait...")
+        time.sleep(5)
+
+        try:
+            response = requests.get(url, timeout=30)
+            existing_expenses = response.json()
+        except:
+            st.error("❌ Backend not reachable. Try again.")
+            existing_expenses = []
+
+    # 🧾 Categories
     categories = ["Rent", "Food", "Shopping", "Entertainment", "Other"]
 
+    # 📦 Form
     with st.form(key="expense_form"):
 
-        # Headers
+        st.subheader("Add / Update Expenses")
+
         col1, col2, col3 = st.columns(3)
 
         with col1:
             st.subheader("Amount")
-
         with col2:
             st.subheader("Category")
-
         with col3:
             st.subheader("Notes")
 
         expenses = []
 
-        # LOOP
+
         for i in range(5):
 
             if i < len(existing_expenses):
@@ -87,9 +101,11 @@ def add_update_tab():
                 "notes": notes_input
             })
 
+        #  Submit button
         submit_button = st.form_submit_button("Save Expenses")
 
         if submit_button:
+
 
             invalid_entries = [exp for exp in expenses if exp["amount"] <= 0]
 
@@ -98,12 +114,28 @@ def add_update_tab():
                 st.stop()
 
 
-            response = requests.post(
-                f"{API_URL}/expenses/{date_str}",
-                json=expenses
-            )
+            try:
+                response = requests.post(
+                    f"{API_URL}/expenses/{date_str}",
+                    json=expenses,
+                    timeout=30
+                )
 
-            if response.status_code == 200:
-                st.success("Expenses updated successfully!")
-            else:
-                st.error("Failed to update expenses.")
+                if response.status_code == 200:
+                    st.success("Expenses updated successfully!")
+                else:
+                    st.error("Failed to update expenses.")
+
+            except requests.exceptions.RequestException:
+                st.warning("⏳ Backend waking up... retrying...")
+                time.sleep(5)
+
+                try:
+                    response = requests.post(
+                        f"{API_URL}/expenses/{date_str}",
+                        json=expenses,
+                        timeout=30
+                    )
+                    st.success("Expenses updated successfully!")
+                except:
+                    st.error("❌ Failed to connect to backend.")
