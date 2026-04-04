@@ -1,55 +1,78 @@
 import mysql.connector
 from contextlib import contextmanager
-from .logging_setup import setup_logger
+import os
+import logging
 
-logger = setup_logger('db_helper')
+
+logger = logging.getLogger("db_helper")
+logger.setLevel(logging.INFO)
+
 
 @contextmanager
 def get_db_cursor(commit=False):
-    connection = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="root",
-        database="expense_manager"
-    )
+    connection = None
+    cursor = None
 
-    cursor = connection.cursor(dictionary=True)
     try:
+        connection = mysql.connector.connect(
+            host=os.getenv("DB_HOST"),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD"),
+            database=os.getenv("DB_NAME")
+        )
+
+        cursor = connection.cursor(dictionary=True)
         yield cursor
+
         if commit:
             connection.commit()
+
     except Exception as e:
-        connection.rollback()
+        if connection:
+            connection.rollback()
+        logger.error(f"DB ERROR: {e}")
+        raise e
+
     finally:
-        cursor.close()
-        connection.close()
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
 
 
 def fetch_expenses_for_date(expense_date):
-    logger.info(f"fetch_expenses_for_date called with {expense_date}")
+    logger.info(f"Fetching expenses for date: {expense_date}")
+
     with get_db_cursor() as cursor:
         cursor.execute(
-            "SELECT * FROM expenses WHERE expense_date = %s",
-            (expense_date.strftime("%Y-%m-%d"),)
-        )
-        expenses = cursor.fetchall()
-        return expenses
-
-
-def delete_expenses_for_date(expense_date):
-    logger.info(f"delete_expenses_for_date called with {expense_date}")
-    with get_db_cursor(commit=True) as cursor:
-        cursor.execute(
             """
-            DELETE FROM expenses
-            WHERE expense_date = %s
+            SELECT * FROM expenses WHERE expense_date = %s
             """,
             (expense_date.strftime("%Y-%m-%d"),)
         )
-        print("deleted rows.", cursor.rowcount )
+        expenses = cursor.fetchall()
+
+    return expenses
+
+
+
+def delete_expenses_for_date(expense_date):
+    logger.info(f"Deleting expenses for date: {expense_date}")
+
+    with get_db_cursor(commit=True) as cursor:
+        cursor.execute(
+            """
+            DELETE FROM expenses WHERE expense_date = %s
+            """,
+            (expense_date.strftime("%Y-%m-%d"),)
+        )
+
+
 
 def insert_expense(expense_date, amount, category, notes):
-    logger.info("insert_expenses_for_date called with {expense_date}")
+    logger.info(f"Inserting expense for date: {expense_date}")
+
     with get_db_cursor(commit=True) as cursor:
         cursor.execute(
             """
@@ -57,14 +80,13 @@ def insert_expense(expense_date, amount, category, notes):
             VALUES (%s, %s, %s, %s)
             """,
             (expense_date, amount, category, notes)
-        )\
+        )
 
-#if __name__ == "__main__" :
- #  print(expenses)
 
 
 def fetch_expense_summary(start_date, end_date):
-    logger.info(f"fetch_expenses_summary called with {start_date} end {end_date}")
+    logger.info(f"Fetching summary from {start_date} to {end_date}")
+
     with get_db_cursor() as cursor:
         cursor.execute(
             """
@@ -75,13 +97,12 @@ def fetch_expense_summary(start_date, end_date):
             """,
             (start_date, end_date)
         )
+
         data = cursor.fetchall()
-        return data
+
+    return data
+
+
 
 if __name__ == "__main__":
-    expenses = fetch_expenses_for_date("2024-09-30")
-    print(expenses)
-
-    summary = fetch_expense_summary("2024-08-01", "2024-08-05")
-    for record in summary:
-        print(record)
+    print("DB helper loaded successfully")

@@ -4,7 +4,8 @@ import pandas as pd
 from datetime import datetime
 import matplotlib.pyplot as plt
 
-API_URL = "http://localhost:8000"
+import os
+API_URL = os.getenv("API_URL", "http://localhost:8000")
 
 
 def analytics_tab():
