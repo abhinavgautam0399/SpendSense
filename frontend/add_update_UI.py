@@ -97,7 +97,7 @@ def add_update_tab():
                 st.error("All amounts must be greater than 0")
                 st.stop()
 
-            
+
             response = requests.post(
                 f"{API_URL}/expenses/{date_str}",
                 json=expenses

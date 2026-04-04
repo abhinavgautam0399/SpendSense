@@ -14,6 +14,10 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
+@app.get("/")
+def home():
+    return {"message": "Spendsense backend running 🚀"}
+
 class Expense(BaseModel):
     amount :float
     category : str
