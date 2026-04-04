@@ -1,15 +1,20 @@
 import streamlit as st
 from datetime import datetime
 import requests
-
 import os
-API_URL = os.getenv("API_URL", "http://localhost:8000")
+
+API_URL = "https://spendsense-backend-m0ze.onrender.com"
 
 
 def add_update_tab():
+
     selected_date = st.date_input("Enter Date", datetime(2024, 8, 1))
 
-    response = requests.get(f"{API_URL}/expenses/{selected_date}")
+
+    date_str = selected_date.strftime("%Y-%m-%d")
+
+
+    response = requests.get(f"{API_URL}/expenses/{date_str}")
 
     if response.status_code == 200:
         existing_expenses = response.json()
@@ -35,9 +40,8 @@ def add_update_tab():
 
         expenses = []
 
-        #LOOP
+        # LOOP
         for i in range(5):
-
 
             if i < len(existing_expenses):
                 amount = existing_expenses[i].get("amount", 0.0)
@@ -50,7 +54,6 @@ def add_update_tab():
 
             col1, col2, col3 = st.columns(3)
 
-
             with col1:
                 amount_input = st.number_input(
                     label="Amount",
@@ -61,7 +64,6 @@ def add_update_tab():
                     label_visibility="collapsed"
                 )
 
-
             with col2:
                 category_input = st.selectbox(
                     label="Category",
@@ -70,7 +72,6 @@ def add_update_tab():
                     key=f"category_{selected_date}_{i}",
                     label_visibility="collapsed"
                 )
-
 
             with col3:
                 notes_input = st.text_input(
@@ -86,21 +87,19 @@ def add_update_tab():
                 "notes": notes_input
             })
 
-
         submit_button = st.form_submit_button("Save Expenses")
 
         if submit_button:
 
-
             invalid_entries = [exp for exp in expenses if exp["amount"] <= 0]
 
             if len(invalid_entries) > 0:
-                st.error("All amounts must be greater than 0 ")
+                st.error("All amounts must be greater than 0")
                 st.stop()
 
-
+            
             response = requests.post(
-                f"{API_URL}/expenses/{selected_date}",
+                f"{API_URL}/expenses/{date_str}",
                 json=expenses
             )
 
