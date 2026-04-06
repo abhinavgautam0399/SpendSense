@@ -3,43 +3,38 @@ import streamlit as st
 # PAGE CONFIG
 st.set_page_config(page_title="SpendSense", layout="wide")
 
-# CSS (FIXED LIGHT + DARK MODE)
 st.markdown("""
 <style>
 
-/* DARK MODE ONLY */
-@media (prefers-color-scheme: dark) {
-    .stApp {
-        background: linear-gradient(135deg, #0f172a, #1e293b);
-        color: white;
-    }
-
-    input, textarea, select {
-        background-color: rgba(255,255,255,0.08) !important;
-        border-radius: 10px !important;
-        border: 1px solid rgba(255,255,255,0.15) !important;
-        color: white !important;
-        padding: 10px !important;
-    }
+/* ===== DARK MODE ===== */
+.stApp[data-theme="dark"] {
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    color: white;
 }
 
-/* LIGHT MODE ONLY */
-@media (prefers-color-scheme: light) {
-    .stApp {
-        background: #f5f7fb;
-        color: #111 !important;
-    }
-
-    input, textarea, select {
-        background-color: white !important;
-        border-radius: 10px !important;
-        border: 1px solid #ccc !important;
-        color: black !important;
-        padding: 10px !important;
-    }
+.stApp[data-theme="dark"] input,
+.stApp[data-theme="dark"] textarea,
+.stApp[data-theme="dark"] select {
+    background-color: rgba(255,255,255,0.08) !important;
+    border: 1px solid rgba(255,255,255,0.15) !important;
+    color: white !important;
 }
 
-/* COMMON STYLING (UNCHANGED) */
+/* ===== LIGHT MODE ===== */
+.stApp[data-theme="light"] {
+    background: #f5f7fb;
+    color: #111 !important;
+}
+
+.stApp[data-theme="light"] input,
+.stApp[data-theme="light"] textarea,
+.stApp[data-theme="light"] select {
+    background-color: white !important;
+    border: 1px solid #ccc !important;
+    color: black !important;
+}
+
+/* ===== KEEP YOUR DESIGN SAME ===== */
 
 .app-title {
     text-align: center;
@@ -48,7 +43,6 @@ st.markdown("""
     font-weight: 800;
     font-size: 48px;
     margin-bottom: 10px;
-    text-shadow: 0px 0px 8px rgba(168, 230, 207, 0.3);
 }
 
 .block-container {
@@ -68,11 +62,6 @@ st.markdown("""
 
 input:focus, textarea:focus {
     border: 1px solid #A8E6CF !important;
-    box-shadow: 0px 0px 8px rgba(168,230,207,0.4) !important;
-}
-
-div[data-testid="column"] {
-    padding: 6px;
 }
 
 .stButton > button {
@@ -82,21 +71,6 @@ div[data-testid="column"] {
     padding: 10px 20px;
     font-weight: bold;
     border: none;
-    transition: 0.3s ease;
-}
-
-.stButton > button:hover {
-    transform: scale(1.05);
-    box-shadow: 0px 0px 10px rgba(168,230,207,0.5);
-}
-
-button[data-baseweb="tab"] {
-    font-size: 16px;
-    font-weight: 600;
-}
-
-button[data-baseweb="tab"][aria-selected="true"] {
-    color: #A8E6CF !important;
 }
 
 </style>
