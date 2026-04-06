@@ -6,7 +6,7 @@ import time
 API_URL = "https://spendsense-backend-m0ze.onrender.com"
 
 def add_update_tab():
-    selected_date = st.date_input("Enter Date", datetime(2024, 8, 1))
+    selected_date = st.date_input("Enter Date", datetime.today())
     date_str = selected_date.strftime("%Y-%m-%d")
 
     # 🔹 Fetch existing expenses (SAFE)
