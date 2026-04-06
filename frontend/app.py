@@ -1,20 +1,45 @@
 import streamlit as st
 
+# PAGE CONFIG
 st.set_page_config(page_title="SpendSense", layout="wide")
 
-# FIX: allow theme-based text color
-st.markdown(
-    "<style>html, body {color: inherit;}</style>",
-    unsafe_allow_html=True
-)
-
+# CSS (FIXED LIGHT + DARK MODE)
 st.markdown("""
 <style>
 
-.stApp {
-    background: linear-gradient(135deg, #0f172a, #1e293b);
-    color: inherit; /* FIX */
+/* DARK MODE ONLY */
+@media (prefers-color-scheme: dark) {
+    .stApp {
+        background: linear-gradient(135deg, #0f172a, #1e293b);
+        color: white;
+    }
+
+    input, textarea, select {
+        background-color: rgba(255,255,255,0.08) !important;
+        border-radius: 10px !important;
+        border: 1px solid rgba(255,255,255,0.15) !important;
+        color: white !important;
+        padding: 10px !important;
+    }
 }
+
+/* LIGHT MODE ONLY */
+@media (prefers-color-scheme: light) {
+    .stApp {
+        background: #f5f7fb;
+        color: #111 !important;
+    }
+
+    input, textarea, select {
+        background-color: white !important;
+        border-radius: 10px !important;
+        border: 1px solid #ccc !important;
+        color: black !important;
+        padding: 10px !important;
+    }
+}
+
+/* COMMON STYLING (UNCHANGED) */
 
 .app-title {
     text-align: center;
@@ -36,18 +61,9 @@ st.markdown("""
 .stForm {
     border-radius: 18px;
     padding: 30px;
-    background: rgba(255,255,255,0.08); /* FIX (was 0.04) */
+    background: rgba(255,255,255,0.04);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255,255,255,0.1);
-}
-
-/* FIX: use inherit instead of white */
-input, textarea, select {
-    background-color: rgba(255,255,255,0.08) !important;
-    border-radius: 10px !important;
-    border: 1px solid rgba(255,255,255,0.15) !important;
-    color: inherit !important;  /* FIX */
-    padding: 10px !important;
 }
 
 input:focus, textarea:focus {
@@ -86,12 +102,14 @@ button[data-baseweb="tab"][aria-selected="true"] {
 </style>
 """, unsafe_allow_html=True)
 
-
+# IMPORTS
 from add_update_UI import add_update_tab
 from analytics_ui import analytics_tab
 
+# TITLE
 st.markdown('<h1 class="app-title">💸 SpendSense</h1>', unsafe_allow_html=True)
 
+# TABS
 tab1, tab2 = st.tabs(["Add/Update", "Analytics"])
 
 with tab1:
