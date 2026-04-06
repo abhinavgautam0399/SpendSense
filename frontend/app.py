@@ -2,11 +2,18 @@ import streamlit as st
 
 st.set_page_config(page_title="SpendSense", layout="wide")
 
+# FIX: allow theme-based text color
+st.markdown(
+    "<style>html, body {color: inherit;}</style>",
+    unsafe_allow_html=True
+)
+
 st.markdown("""
 <style>
+
 .stApp {
     background: linear-gradient(135deg, #0f172a, #1e293b);
-    color: white;
+    color: inherit; /* FIX */
 }
 
 .app-title {
@@ -29,16 +36,17 @@ st.markdown("""
 .stForm {
     border-radius: 18px;
     padding: 30px;
-    background: rgba(255,255,255,0.04);
+    background: rgba(255,255,255,0.08); /* FIX (was 0.04) */
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255,255,255,0.1);
 }
 
+/* FIX: use inherit instead of white */
 input, textarea, select {
     background-color: rgba(255,255,255,0.08) !important;
     border-radius: 10px !important;
     border: 1px solid rgba(255,255,255,0.15) !important;
-    color: white !important;
+    color: inherit !important;  /* FIX */
     padding: 10px !important;
 }
 
@@ -74,8 +82,10 @@ button[data-baseweb="tab"] {
 button[data-baseweb="tab"][aria-selected="true"] {
     color: #A8E6CF !important;
 }
+
 </style>
 """, unsafe_allow_html=True)
+
 
 from add_update_UI import add_update_tab
 from analytics_ui import analytics_tab
